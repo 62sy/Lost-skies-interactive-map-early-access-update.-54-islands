@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      /* Remove the rotation */
+      /* transform: rotate(180deg); */
+    }
+    .marker-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      color: white;
+      font-weight: bold;
+      font-family: sans-serif;
+      font-size: 28px;
+      line-height: 60px;
+      text-align: center;
+      background-color: rgba(243, 243, 243, 0.85); /* More opaque, less transparent */
+      border: 2px solid white;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      display: inline-block;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+    #compass {
+      position: absolute;
+      top: 50px;
+      left: 50px;
+      width: 200px;
+      height: 200px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    /* Infinite sky texture background */
+    body {
+      background: linear-gradient(to bottom, #e0f7fa 0%, #b3e5fc 100%);
+      background-repeat: repeat;
+    }
+    .leaflet-marker-icon {
+      z-index: 500;
+      opacity: 1;
+      background: none;
+    }
+    #dropdown-popup {
+      position: absolute;
+      top: 20px;
+      right: 55px;
+      z-index: 2000;
+    }
+    #dropdown-btn {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #dropdown-list {
+      display: none;
+      background: white;
+      border: 1px solid #ccc;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #dropdown-list ul {
+      list-style: none;
+      margin: 0;
+      padding: 8px 16px;
+    }
+    #dropdown-list li {
+      padding: 4px 0;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<img id="compass" src="compass.png" alt="Compass" />
+<div id="dropdown-popup">
+  <button id="dropdown-btn">Show Island List</button>
+  <div id="dropdown-list">
+    <ul>
+      <li>1: Tutorial_Island_V35</li>
+      <li>2: MS4_Island_With_Puzzles</li>
+      <li>3: Verdent_Valley</li>
+      <li>4: Portamis</li>
+      <li>5: Craco</li>
+      <li>6: Friendly_Fire</li>
+      <li>7: Ravara</li>
+      <li>8: Sanctum_of_the_Ancients</li>
+      <li>9: Shattered_Peak</li>
+      <li>10: Thieves_and_Retribution</li>
+      <li>11: Time_Devours_All</li>
+      <li>12: The_Valve_District</li>
+      <li>13: The_Grand_Inventors_Mansion</li>
+      <li>14: The_Spine</li>
+      <li>15: At_Journeys_End</li>
+      <li>16: Atlas_Isles</li>
+      <li>17: Atlas_Palace</li>
+      <li>18: Netherworld</li>
+      <li>19: Crystalline_Mausoleum</li>
+      <li>20: Data_Research_Facility</li>
+      <li>21: Geode_Factory</li>
+      <li>22: Hanging_Village_of_Ranva</li>
+      <li>23: Harbored_Saborian_Citadel</li>
+      <li>24: Hermit_Hideaway</li>
+      <li>25: Lode_Vein</li>
+      <li>26: Mountain_Valley</li>
+      <li>27: Natures_respite</li>
+      <li>28: Saborian_Central_Park</li>
+      <li>29: Saborian_Training_Ground</li>
+      <li>30: Serene_Cove</li>
+      <li>31: Tall_Trees_Directors_Cut</li>
+      <li>32: Temple_Core</li>
+      <li>33: Temple_Down</li>
+      <li>34: THE_WELL</li>
+      <li>35: Toppled</li>
+      <li>36: Traitors_Enclave</li>
+      <li>37: Aquaduct_Island</li>
+      <li>38: Atlas_Spire</li>
+      <li>39: Cargo_Ship_B</li>
+      <li>40: Dryftwood_River</li>
+      <li>41: New_Redusa</li>
+      <li>42: Relay_Station_D</li>
+      <li>43: Sabor_research_facility_87</li>
+      <li>44: Shattered</li>
+      <li>45: Stitches</li>
+      <li>46: Sundered_Moon</li>
+      <li>47: Research_Facility_Theta</li>
+      <li>48: Wandering_Mountain</li>
+      <li>49: Mining_Settlement_of_Markil_v1</li>
+      <li>50: INTERLINKED_04</li>
+      <li>51: Lighthouse_Arabeth</li>
+      <li>52: Doshi_export_test</li>
+      <li>53: Resting_Titan</li>
+      <li>54: Rupture</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+const map = L.map('map', {
+  crs: L.CRS.Simple,
+  minZoom: -5,
+  maxZoom: 2
+});
+
+const customIcon = (number, color) => L.divIcon({
+  className: '',
+  html: `<div class="marker-circle" style="background-color: ${color};">${number}</div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15]
+});
+
+function getMarkerColor(level) {
+  if (level >= 1 && level <= 7) return '#90ee90'; // very light green
+  if (level >= 8 && level <= 10) return 'dark blue'; // dark blue
+  if (level >= 11 && level <= 13) return 'orange';
+  if (level >= 14 && level <= 15) return 'red';
+  if (level >= 0) return 'purple';
+  return 'gray';
+}
+
+const markersData = [
+   { lat: 0, lng: -0, level: 0, name: 'Tutorial_Island_V35', number: 1, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629186171998228/1.png?ex=68826b1c&is=6881199c&hm=6f947eca8360e447600e784b575d42984a80b09331d16f4f025cdbc427bd1a77&' },
+  { lat: 2150, lng: -5100, level: 4, name: 'MS4_Island_With_Puzzles', number: 2, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629187287810301/2.png?ex=68826b1c&is=6881199c&hm=b56ebe811664e8d706894bc239ce4884bf45064ab0f69ec9d6bc0941ab20edcb&' },
+  { lat: -9000, lng: 1500, level: 13, name: 'Verdent_Valley', number: 3, img: 'https://images.steamusercontent.com/ugc/2127446744788942316/0C878324EB1BB7EB03CD81B7AC4C421CBB934D96/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 6000, lng: -2050, level: 9, name: 'Portamis', number: 4, img: 'https://images.steamusercontent.com/ugc/2317727638360524855/471956BC8B31C7DE87FEF6B76E231DC2FD9EBE31/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -10800, lng: 5400, level: 14, name: 'Craco', number: 5, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629187887730801/5.png?ex=68826b1d&is=6881199d&hm=d2e7d8b7c050618144b156397b4e1755024376ace45453e5b948c620a8a5245a&=&format=webp&quality=lossless&width=955&height=708' },
+  { lat: 6000, lng: 9200, level: 11, name: 'Friendly_Fire', number: 6, img: 'https://automaticpotato.github.io/found-skies/covers/15.png' },
+  { lat: 5400, lng: 4700, level: 8, name: 'Ravara', number: 7, img: 'https://media.discordapp.net/attachments/1363502652373209109/1363770251501637723/Ravara.png?ex=6881d905&is=68808785&hm=4019c4f20f484a4c5f3c8e76e1acf196a3441076c948795227b74a027d5d5f48&=&format=webp&quality=lossless&width=1518&height=516' },
+  { lat: 2400, lng: 700, level: 3, name: 'Sanctum_of_the_Ancients', number: 8, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397631870824349856/hq720.jpg?ex=68826d9c&is=68811c1c&hm=ff8b5cff89c7b010101fbf0d2f079fa722f4080004b7ce3d3d66b15637d3ffbc&' },
+  { lat: -2100, lng: -2350, level: 3, name: 'Shattered_Peak', number: 9, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629188609146970/9.png?ex=68826b1d&is=6881199d&hm=4133f6c11a4b8636377d50220a2f3ebb61678239b27ed00d711f33ed43b0fa19&=&format=webp&quality=lossless&width=1248&height=708' },
+  { lat: -1200, lng: 4500, level: 8, name: 'Thieves_and_Retribution', number: 10, img: 'https://images.steamusercontent.com/ugc/17551964622352859702/C7060D1A35DA7A1C291CABAD05EEE24FD6C5E9EE/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -7400, lng: -4900, level: 12, name: 'Time_Devours_All', number: 11, img: 'https://images.steamusercontent.com/ugc/16558612480838040371/CF2B7B85915A94DE66F69DDF91BC505665F4BE7B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -8550, lng: 7750, level: 15, name: 'The_Valve_District', number: 12, img: 'https://images.steamusercontent.com/ugc/2380783739882538752/3CED563759FCD6885D1A126039E84C521ED264C8/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 8050, lng: -5700, level: 15, name: 'The_Grand_Inventors_Mansion', number: 13, img: 'https://images.steamusercontent.com/ugc/2453970404562727357/81564653AB7D697EA7A70A0F4A53A16E60DEC35D/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 1900, lng: 2750, level: 6, name: 'The_Spine', number: 14, img: 'https://images.steamusercontent.com/ugc/2506892769648802292/E14DCA3E575E2627620346A1F40A4B18E6AD496A/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -3900, lng: 1200, level: 6, name: 'At_Journeys_End', number: 15, img: 'https://images.steamusercontent.com/ugc/7424330444429012/8FF27E4B80412B332B1497AA674EDC51601EE61F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 4400, lng: -10500, level: 7, name: 'Atlas_Isles', number: 16, img: 'https://images.steamusercontent.com/ugc/47955480899616070/75F11B90DABC5A9B110E829AB2EDD69DEA355839/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 2800, lng: 7900, level: 10, name: 'Atlas_Palace', number: 17, img: 'https://images.steamusercontent.com/ugc/47959716820166570/9DCD9B75E7B025F0505974EAA9278D54A35BA032/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 4000, lng: 11600, level: 8, name: 'Netherworld', number: 18, img: 'https://images.steamusercontent.com/ugc/2505775749471656819/3F4ED33DB8E7772CF94B9D3FBA33F12A79506A04/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 1110, lng: -10800, level: 7, name: 'Crystalline_Mausoleum', number: 19, img: 'https://images.steamusercontent.com/ugc/9675400224345817/30D7028F24D024BB0D38A8D6752520CDE94A6A14/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 8800, lng: -1500, level: 12, name: 'Data_Research_Facility', number: 20, img: 'https://images.steamusercontent.com/ugc/35571099084413811/83CDCEAAAC3DC50B08BEFA8157D7CB5746618784/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -5400, lng: 6150, level: 12, name: 'Geode_Factory', number: 21, img: 'https://images.steamusercontent.com/ugc/36697728021101431/F0F38143D14CC30ABED1D9B2B85FA3B4C9648149/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 6000, lng: 650, level: 10, name: 'Hanging_Village_of_Ranva', number: 22, img: 'https://images.steamusercontent.com/ugc/10825048028014510401/0107ABFA6D860D2EF21C5671F9E51C90CBDD8B4F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 8100, lng: 6300, level: 12, name: 'Harbored_Saborian_Citadel', number: 23, img: 'https://images.steamusercontent.com/ugc/11920957430047008/E83F336E2741DA0FB7FB93FC11714AE4521BB367/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -6000, lng: 3700, level: 10, name: 'Hermit_Hideaway', number: 24, img: 'https://images.steamusercontent.com/ugc/35571099084374384/092D74973E3EE79A2905C903DC4EDF1CABF80BED/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 4000, lng: -7500, level: 6, name: 'Lode_Vein', number: 25, img: 'https://images.steamusercontent.com/ugc/49084981969399345/9DC64DD9198DDFC0ACEE9E47DC312B0C754E241F/?imw=268&imh=151&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 950, lng: 12600, level: 7, name: 'Mountain_Valley', number: 26, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629189112467526/26.png?ex=68826b1d&is=6881199d&hm=8aa59fd5a2b7eb99e9f33648def9be9f96b79a10e253cf7bf6ae0e090753d05b&=&format=webp&quality=lossless&width=915&height=708' },
+  { lat: -1100, lng: 1400, level: 6, name: 'Natures_respite', number: 27, img: 'https://images.steamusercontent.com/ugc/18682083349082801/FA1FDC71DCE5D0D91EC430FC92341226632C7823/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 2500, lng: -8400, level: 9, name: 'Saborian_Central_Park', number: 28, img: 'https://images.steamusercontent.com/ugc/13759587820867504466/A27E2E814F1BAD5072883A9D93550D439C4E98E0/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: -9150, lng: -800, level: 13, name: 'Saborian_Training_Ground', number: 29, img: 'https://images.steamusercontent.com/ugc/16748347838070984492/95DAADC3C0749081BBB2486489B4221540B34EA1/?imw=268&imh=151&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 100, lng: 8800, level: 6, name: 'Serene_Cove', number: 30, img: 'https://images.steamusercontent.com/ugc/20926872368592668/B718F8A1BA3C9DB3C287AC6386E107162074895F/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -3900, lng: -6900, level: 10, name: 'Tall_Trees_Directors_Cut', number: 31, img: 'https://images.steamusercontent.com/ugc/11925850702225041/8F358658B67641577A880EBF32652AF60E3540A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -8000, lng: -8250, level: 14, name: 'Temple_Core', number: 32, img: 'https://images.steamusercontent.com/ugc/36696481829084933/EDD53F8E5C94791DD507F0D58281A41E84A15329/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 9100, lng: 2800, level: 14, name: 'Temple_Down', number: 33, img: 'https://images.steamusercontent.com/ugc/36695648659456715/0878E84B2F29700BDEAF7CC60DF43A85BA0908A9/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -6050, lng: -600, level: 10, name: 'THE_WELL', number: 34, img: 'https://images.steamusercontent.com/ugc/13049847197789538/688CB5A5F9987CB0B9AB1F0AD7330B72A57BB1A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -3150, lng: 9250, level: 10, name: 'Toppled', number: 35, img: 'https://images.steamusercontent.com/ugc/35571099090522832/322BDB9AC5196337F014974007826695E184C22A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -600, lng: -11650, level: 10, name: 'Traitors_Enclave', number: 36, img: 'https://media.discordapp.net/attachments/1363502652373209109/1364114887348981831/Traitors_Enclave.png?ex=6881c87d&is=688076fd&hm=e544ab44433a82fc12d95644af0708ea812dee32eb25c660bce66fd359db531b&=&format=webp&quality=lossless&width=916&height=812' },
+  { lat: -500, lng: -14600, level: 8, name: 'Aquaduct_Island', number: 37, img: 'https://images.steamusercontent.com/ugc/27693518483867402/C321BF4CBFAF60AFE7113C17D97B5E3BD4D8C35E/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -2800, lng: 12800, level: 8, name: 'Atlas_Spire', number: 38, img: 'https://images.steamusercontent.com/ugc/42320254923492141/19C9122D9D02395EEF1390F70CD92BFCCC3EE033/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -10600, lng: -6500, level: 13, name: 'Cargo_Ship_B', number: 39, img: 'https://images.steamusercontent.com/ugc/36698355671393540/5A153A366C147017915DD08E178C0B7D17C79C94/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 12250, lng: 1200, level: 13, name: 'Dryftwood_River', number: 40, img: 'https://images.steamusercontent.com/ugc/12485074223546072709/AB6D7DC51EB30071FF374C996684167E537B9A20/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 11000, lng: -8000, level: 12, name: 'New_Redusa', number: 41, img: 'https://images.steamusercontent.com/ugc/12941666969162637756/4FFD22C6D15944241FD0223CD5B529726491C9CA/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 3900, lng: -12800, level: 10, name: 'Relay_Station_D', number: 42, img: 'https://images.steamusercontent.com/ugc/1796636835345802/8BB91ECB6EA0E360D02724EBA16EB4E2203062A6/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 3550, lng: 14200, level: 11, name: 'Sabor_research_facility_87', number: 43, img: 'https://images.steamusercontent.com/ugc/17855666951499294874/F2A1580A507EBDAC26373B9F665E4AC3033D2AB4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -5800, lng: -11000, level: 8, name: 'Shattered', number: 44, img: 'https://images.steamusercontent.com/ugc/17184726129550996517/299616ED357C4D7271FC6E8D87656D21697BEC6A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 7200, lng: 12650, level: 4, name: 'Stitches', number: 45, img: 'https://images.steamusercontent.com/ugc/18682599225519426/324CDB40CE5BE7E1EA28148AFFE7EB61D280E106/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -7000, lng: 11650, level: 13, name: 'Sundered_Moon', number: 46, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629189741482114/46.png?ex=68826b1d&is=6881199d&hm=38cd58f537dde5ef8d468da1d2b23684a40348e09e193e7277bb589fa50fd05b&=&format=webp&quality=lossless&width=1077&height=708' },
+  { lat: 11900, lng: 5250, level: 10, name: 'Research_Facility_Theta', number: 47, img: 'https://images.steamusercontent.com/ugc/61459269001702322/3FD5B168F020C37DE056660B79D9366409F87D04/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 9450, lng: 8850, level: 8, name: 'Wandering_Mountain', number: 48, img: 'https://images.steamusercontent.com/ugc/10910435218475709033/79F0193962D114F6F3C34F76FF5E4B5F976CE6BD/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -11200, lng: 8900, level: 11, name: 'Mining_Settlement_of_Markil_v1', number: 49, img: 'https://images.steamusercontent.com/ugc/16330827621795919660/24F9D34A19A54952794BF0165FD55CF51F96C2DB/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -12250, lng: -2800, level: 13, name: 'INTERLINKED_04', number: 50, img: 'https://images.steamusercontent.com/ugc/7423600166260495/67524D063EC5FB6E4D16290897D34938526EE753/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 11150, lng: -4400, level: 10, name: 'Lighthouse_Arabeth', number: 51, img: 'https://images.steamusercontent.com/ugc/9661148044318056692/79616F63B2A854EA2C469ED7396678320640D416/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+  { lat: 7900, lng: -10000, level: 9, name: 'Doshi_export_test', number: 52, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629190357909554/52.png?ex=68826b1d&is=6881199d&hm=94e9e36715a286c05148b9f3833e11b371871dd9367910e68cbcad40f766486e&=&format=webp&quality=lossless' },
+  { lat: -12650, lng: 1900, level: 13, name: 'Resting_Titan', number: 53, img: 'https://images.steamusercontent.com/ugc/14364650787230671269/B0E27B3458DBAD61FB5258540F700CBF4E1A079B/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -6750, lng: 9150, level: 10, name: 'Rupture', number: 54, img: 'https://images.steamusercontent.com/ugc/24312098774332487/0C0525850207AA2F817A1993BF3C7F96DC54747A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' }
+];
+
+// Only add reversed markers
+markersData.forEach(data => {
+  const color = getMarkerColor(data.level);
+  // Overlay with almost no transparency (very solid color)
+  const iconHtml = `
+    <div class="marker-circle" style="position: relative;">
+      <img src="${data.img}" alt="${data.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1;">
+      <div style="background-color: ${color}; opacity: 0.3; position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;"></div>
+      <span style="position:relative;z-index:3;display:inline-block;width:100%;height:100%;line-height:60px;font-size:28px;color:white;text-shadow:0 0 6px #000;font-weight:bold;">${data.number}</span>
+    </div>
+  `;
+  L.marker([-data.lat, -data.lng], { icon: L.divIcon({
+    className: '',
+    html: iconHtml,
+    iconSize: [60, 60],
+    iconAnchor: [30, 30]
+  }) })
+    .addTo(map)
+    .bindPopup(
+      `<img src="${data.img}" alt="${data.name}" style="width:100px;height:auto;display:block;margin-bottom:8px;">
+      <b>${data.number}: ${data.name}</b><br>
+      Level: ${data.level}<br>
+      Lat: ${-data.lat}<br>
+      Lng: ${-data.lng}`
+    );
+});
+
+const mapBounds = [[-20000, -20000], [20000, 20000]]; // Adjust size as needed
+map.setMaxBounds(mapBounds);
+map.setView([0, 0], 0); // Center map at (0,0) with zoom level 0
+
+document.getElementById('dropdown-btn').onclick = function() {
+  const list = document.getElementById('dropdown-list');
+  list.style.display = list.style.display === 'block' ? 'none' : 'block';
+};
+</script>
+</body>
+</html>
