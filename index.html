@@ -233,7 +233,12 @@ const markersData = [
 // Only add reversed markers
 markersData.forEach(data => {
   const color = getMarkerColor(data.level);
-  // Overlay with almost no transparency (very solid color)
+  // Rotate grid 90deg CCW, invert axes, then mirror both axes
+  const markerLat = data.lng;
+  const markerLng = -data.lat;
+  // Mirror both axes
+  const mirroredLat = markerLat;
+  const mirroredLng = markerLng * -1;
   const iconHtml = `
     <div class="marker-circle" style="position: relative;">
       <img src="${data.img}" alt="${data.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1;">
@@ -241,7 +246,7 @@ markersData.forEach(data => {
       <span style="position:relative;z-index:3;display:inline-block;width:100%;height:100%;line-height:60px;font-size:28px;color:white;text-shadow:0 0 6px #000;font-weight:bold;">${data.number}</span>
     </div>
   `;
-  L.marker([-data.lat, -data.lng], { icon: L.divIcon({
+  L.marker([mirroredLat, mirroredLng], { icon: L.divIcon({
     className: '',
     html: iconHtml,
     iconSize: [60, 60],
@@ -252,8 +257,8 @@ markersData.forEach(data => {
       `<img src="${data.img}" alt="${data.name}" style="width:100px;height:auto;display:block;margin-bottom:8px;">
       <b>${data.number}: ${data.name}</b><br>
       Level: ${data.level}<br>
-      Lat: ${-data.lat}<br>
-      Lng: ${-data.lng}`
+      Lat: ${mirroredLat}<br>
+      Lng: ${mirroredLng}`
     );
 });
 
@@ -268,3 +273,4 @@ document.getElementById('dropdown-btn').onclick = function() {
 </script>
 </body>
 </html>
+
