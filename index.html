@@ -154,13 +154,13 @@
 <script>
 const map = L.map('map', {
   crs: L.CRS.Simple,
-  minZoom: -5,
+  minZoom: -7,
   maxZoom: 2,
   maxBounds: [[-20000, -20000], [20000, 20000]], // keep this line
   maxBoundsViscosity: 1.0, // add this line
   dragging: false, // disable dragging
   doubleClickZoom: false, // disable double click zoom
-  touchZoom: false, // disable touch zoom
+  touchZoom: TRUE, // disable touch zoom
   scrollWheelZoom: 'zoom' // zoom at mouse position
 });
 
@@ -786,6 +786,7 @@ document.getElementById('dropdown-btn').onclick = function() {
 </script>
 </body>
 </html>
+
 
 
 
