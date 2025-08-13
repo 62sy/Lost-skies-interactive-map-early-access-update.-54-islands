@@ -790,6 +790,16 @@ markersData.forEach(data => {
   </div>`
     );
   markerRefs[data.number] = marker;
+
+  // Hide island list and compass when popup opens, show when closes
+  marker.on('popupopen', function() {
+    document.getElementById('dropdown-popup').style.display = 'none';
+    document.getElementById('compass').style.display = 'none';
+  });
+  marker.on('popupclose', function() {
+    document.getElementById('dropdown-popup').style.display = '';
+    document.getElementById('compass').style.display = '';
+  });
 });
 
 const mapBounds = [[-20000, -20000], [20000, 20000]]; // Adjust size as needed
@@ -817,6 +827,7 @@ document.querySelectorAll('#dropdown-list li').forEach(li => {
 </script>
 </body>
 </html>
+
 
 
 
