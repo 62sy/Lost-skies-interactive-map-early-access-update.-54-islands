@@ -9,12 +9,16 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100%; }
     #map {
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      /* Remove the rotation */
-      /* transform: rotate(180deg); */
-      will-change: transform;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  box-sizing: border-box;
+  /* box-shadow removed for performance */
+  will-change: transform;
+  /* transform: rotate(180deg); */
+  will-change: transform;
+  transform: translateZ(0); /* hardware acceleration for smoother dragging */
     }
     .marker-circle {
   width: 60px;
@@ -45,8 +49,8 @@
     }
     /* Infinite sky texture background */
     body {
-      background: linear-gradient(to bottom, #e0f7fa 0%, #b3e5fc 100%);
-      background-repeat: repeat;
+  background: linear-gradient(180deg, #e0f7fa 0%, #b3e5fc 60%, #a7c7e7 100%);
+  background-repeat: repeat;
     }
     .leaflet-marker-icon {
       z-index: 500;
@@ -154,15 +158,26 @@
 <script>
 const map = L.map('map', {
   crs: L.CRS.Simple,
-  minZoom: -7,
-  maxZoom: 2,
+  minZoom: -5.5,
+  maxZoom: -1,
   maxBounds: [[-20000, -20000], [20000, 20000]], // keep this line
   maxBoundsViscosity: 1.0, // add this line
-  dragging: false, // disable dragging
+  dragging: true, // enable dragging
   doubleClickZoom: false, // disable double click zoom
-  touchZoom: TRUE, // disable touch zoom
-  scrollWheelZoom: 'zoom' // zoom at mouse position
+  touchZoom: false, // disable touch zoom
+  scrollWheelZoom: 'zoom', // zoom at mouse position
+  preferCanvas: true, // use canvas for overlays (faster)
+  inertia: false, // disable inertia for smoother drag
+  keyboard: false // disable keyboard navigation
 });
+
+// Add green circle boundary at map center
+const boundaryCircle = L.circle([0, 0], {
+  radius: 20000,
+  color: 'rgba(128,0,128,0.5)', // transparent purple
+  weight: 5,
+  fill: false
+}).addTo(map);
 
 const customIcon = (number, color) => L.divIcon({
   className: '',
@@ -233,7 +248,7 @@ const markersData = [
     items: 'Glass Shards, Electric Filament, Tarnished Saborian Alloy, Lubricating Slime, Weapon Calibration SSD'
   }
 },
-  { lat: -10800, lng: 5400, level: 14, name: 'Craco', number: 5, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629187887730801/5.png?ex=68826b1d&is=6881199d&hm=d2e7d8b7c050618144b156397b4e1755024376ace45453e5b948c620a8a5245a&=&format=webp&quality=lossless&width=955&height=708',
+  { lat: -10800, lng: 5400, level: 14, name: 'Craco', number: 5, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/21.webp',
   details: {
     metals: 'Tin, Zinc, Aluminum, Pure Aluminum',
     woods: 'Apotheon Pine',
@@ -705,7 +720,8 @@ const markersData = [
   { lat: -6750, lng: 9150, level: 10, name: 'Rupture', number: 54, img: 'https://images.steamusercontent.com/ugc/24312098774332487/0C0525850207AA2F817A1993BF3C7F96DC54747A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' }
 ];
 
-// Only add reversed markers
+// Store marker references for island list interaction
+const markerRefs = {};
 markersData.forEach(data => {
   const color = getMarkerColor(data.level);
   // Rotate grid 90deg CCW, invert axes, then mirror both axes
@@ -721,7 +737,7 @@ markersData.forEach(data => {
       <span style="position:relative;z-index:3;display:inline-block;width:100%;height:100%;line-height:60px;font-size:28px;color:white;text-shadow:0 0 6px #000;font-weight:bold;">${data.number}</span>
     </div>
   `;
-  L.marker([mirroredLat, mirroredLng], { icon: L.divIcon({
+  const marker = L.marker([mirroredLat, mirroredLng], { icon: L.divIcon({
     className: '',
     html: iconHtml,
     iconSize: [60, 60],
@@ -773,6 +789,7 @@ markersData.forEach(data => {
     </div>
   </div>`
     );
+  markerRefs[data.number] = marker;
 });
 
 const mapBounds = [[-20000, -20000], [20000, 20000]]; // Adjust size as needed
@@ -783,6 +800,20 @@ document.getElementById('dropdown-btn').onclick = function() {
   const list = document.getElementById('dropdown-list');
   list.style.display = list.style.display === 'block' ? 'none' : 'block';
 };
+
+// Make island list items clickable to center map and open popup
+document.querySelectorAll('#dropdown-list li').forEach(li => {
+  li.style.cursor = 'pointer';
+  li.onclick = function() {
+    const num = parseInt(li.textContent.split(':')[0]);
+    const marker = markerRefs[num];
+    if (marker) {
+      map.setView(marker.getLatLng(), 0, { animate: true });
+      marker.openPopup();
+    }
+    document.getElementById('dropdown-list').style.display = 'none';
+  };
+});
 </script>
 </body>
 </html>
