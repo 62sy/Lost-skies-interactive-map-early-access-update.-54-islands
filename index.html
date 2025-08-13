@@ -14,6 +14,7 @@
       background: transparent;
       /* Remove the rotation */
       /* transform: rotate(180deg); */
+      will-change: transform;
     }
     .marker-circle {
       width: 60px;
@@ -154,7 +155,9 @@
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -5,
-  maxZoom: 2
+  maxZoom: 2,
+  maxBounds: [[-20000, -20000], [20000, 20000]], // keep this line
+  maxBoundsViscosity: 1.0 // add this line
 });
 
 const customIcon = (number, color) => L.divIcon({
@@ -174,54 +177,522 @@ function getMarkerColor(level) {
 }
 
 const markersData = [
-   { lat: 0, lng: -0, level: 0, name: 'Tutorial_Island_V35', number: 1, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629186171998228/1.png?ex=68826b1c&is=6881199c&hm=6f947eca8360e447600e784b575d42984a80b09331d16f4f025cdbc427bd1a77&' },
-  { lat: 2150, lng: -5100, level: 4, name: 'MS4_Island_With_Puzzles', number: 2, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629187287810301/2.png?ex=68826b1c&is=6881199c&hm=b56ebe811664e8d706894bc239ce4884bf45064ab0f69ec9d6bc0941ab20edcb&' },
-  { lat: -9000, lng: 1500, level: 13, name: 'Verdent_Valley', number: 3, img: 'https://images.steamusercontent.com/ugc/2127446744788942316/0C878324EB1BB7EB03CD81B7AC4C421CBB934D96/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 6000, lng: -2050, level: 9, name: 'Portamis', number: 4, img: 'https://images.steamusercontent.com/ugc/2317727638360524855/471956BC8B31C7DE87FEF6B76E231DC2FD9EBE31/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -10800, lng: 5400, level: 14, name: 'Craco', number: 5, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629187887730801/5.png?ex=68826b1d&is=6881199d&hm=d2e7d8b7c050618144b156397b4e1755024376ace45453e5b948c620a8a5245a&=&format=webp&quality=lossless&width=955&height=708' },
-  { lat: 6000, lng: 9200, level: 11, name: 'Friendly_Fire', number: 6, img: 'https://automaticpotato.github.io/found-skies/covers/15.png' },
-  { lat: 5400, lng: 4700, level: 8, name: 'Ravara', number: 7, img: 'https://media.discordapp.net/attachments/1363502652373209109/1363770251501637723/Ravara.png?ex=6881d905&is=68808785&hm=4019c4f20f484a4c5f3c8e76e1acf196a3441076c948795227b74a027d5d5f48&=&format=webp&quality=lossless&width=1518&height=516' },
-  { lat: 2400, lng: 700, level: 3, name: 'Sanctum_of_the_Ancients', number: 8, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397631870824349856/hq720.jpg?ex=68826d9c&is=68811c1c&hm=ff8b5cff89c7b010101fbf0d2f079fa722f4080004b7ce3d3d66b15637d3ffbc&' },
-  { lat: -2100, lng: -2350, level: 3, name: 'Shattered_Peak', number: 9, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629188609146970/9.png?ex=68826b1d&is=6881199d&hm=4133f6c11a4b8636377d50220a2f3ebb61678239b27ed00d711f33ed43b0fa19&=&format=webp&quality=lossless&width=1248&height=708' },
-  { lat: -1200, lng: 4500, level: 8, name: 'Thieves_and_Retribution', number: 10, img: 'https://images.steamusercontent.com/ugc/17551964622352859702/C7060D1A35DA7A1C291CABAD05EEE24FD6C5E9EE/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -7400, lng: -4900, level: 12, name: 'Time_Devours_All', number: 11, img: 'https://images.steamusercontent.com/ugc/16558612480838040371/CF2B7B85915A94DE66F69DDF91BC505665F4BE7B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -8550, lng: 7750, level: 15, name: 'The_Valve_District', number: 12, img: 'https://images.steamusercontent.com/ugc/2380783739882538752/3CED563759FCD6885D1A126039E84C521ED264C8/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 8050, lng: -5700, level: 15, name: 'The_Grand_Inventors_Mansion', number: 13, img: 'https://images.steamusercontent.com/ugc/2453970404562727357/81564653AB7D697EA7A70A0F4A53A16E60DEC35D/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 1900, lng: 2750, level: 6, name: 'The_Spine', number: 14, img: 'https://images.steamusercontent.com/ugc/2506892769648802292/E14DCA3E575E2627620346A1F40A4B18E6AD496A/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -3900, lng: 1200, level: 6, name: 'At_Journeys_End', number: 15, img: 'https://images.steamusercontent.com/ugc/7424330444429012/8FF27E4B80412B332B1497AA674EDC51601EE61F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 4400, lng: -10500, level: 7, name: 'Atlas_Isles', number: 16, img: 'https://images.steamusercontent.com/ugc/47955480899616070/75F11B90DABC5A9B110E829AB2EDD69DEA355839/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 2800, lng: 7900, level: 10, name: 'Atlas_Palace', number: 17, img: 'https://images.steamusercontent.com/ugc/47959716820166570/9DCD9B75E7B025F0505974EAA9278D54A35BA032/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 4000, lng: 11600, level: 8, name: 'Netherworld', number: 18, img: 'https://images.steamusercontent.com/ugc/2505775749471656819/3F4ED33DB8E7772CF94B9D3FBA33F12A79506A04/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 1110, lng: -10800, level: 7, name: 'Crystalline_Mausoleum', number: 19, img: 'https://images.steamusercontent.com/ugc/9675400224345817/30D7028F24D024BB0D38A8D6752520CDE94A6A14/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 8800, lng: -1500, level: 12, name: 'Data_Research_Facility', number: 20, img: 'https://images.steamusercontent.com/ugc/35571099084413811/83CDCEAAAC3DC50B08BEFA8157D7CB5746618784/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -5400, lng: 6150, level: 12, name: 'Geode_Factory', number: 21, img: 'https://images.steamusercontent.com/ugc/36697728021101431/F0F38143D14CC30ABED1D9B2B85FA3B4C9648149/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 6000, lng: 650, level: 10, name: 'Hanging_Village_of_Ranva', number: 22, img: 'https://images.steamusercontent.com/ugc/10825048028014510401/0107ABFA6D860D2EF21C5671F9E51C90CBDD8B4F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 8100, lng: 6300, level: 12, name: 'Harbored_Saborian_Citadel', number: 23, img: 'https://images.steamusercontent.com/ugc/11920957430047008/E83F336E2741DA0FB7FB93FC11714AE4521BB367/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
+   { lat: 0, lng: -0, level: 0, name: 'Tutorial_Island_V35', number: 1, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629186171998228/1.png?ex=68826b1c&is=6881199c&hm=6f947eca8360e447600e784b575d42984a80b09331d16f4f025cdbc427bd1a77&',
+  details: {
+    altitude: '1200m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Iron',
+    woods: 'Pine, Birch',
+    plants: 'Tomanana',
+    animals: 'Common Sairhorn, Blue Manta',
+    items: 'Not Reported'
+  }
+},
+  { lat: 1050, lng: -2500, level: 4, name: 'MS4_Island_With_Puzzles', number: 2, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397629187287810301/2.png?ex=68826b1c&is=6881199c&hm=b56ebe811664e8d706894bc239ce4884bf45064ab0f69ec9d6bc0941ab20edcb&',
+  details: {
+    altitude: '1400m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Not Reported',
+    woods: 'Not Reported',
+    plants: 'Not Reported',
+    animals: 'Not Reported',
+    items: 'Not Reported'
+  }
+},
+  { lat: -9000, lng: 1500, level: 13, name: 'Verdent_Valley', number: 3, img: 'https://images.steamusercontent.com/ugc/2127446744788942316/0C878324EB1BB7EB03CD81B7AC4C421CBB934D96/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1800m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 5,
+    metals: 'Zinc, Silver, Aluminum',
+    woods: 'Apotheon Pine',
+    plants: 'Beans',
+    animals: '', // Will not show in popup
+    items: 'Glass Shards, Momorosian Nylon Cloth, Electric Filament'
+  }
+},
+  { lat: 6000, lng: -2050, level: 9, name: 'Portamis', number: 4, img: 'https://images.steamusercontent.com/ugc/2317727638360524855/471956BC8B31C7DE87FEF6B76E231DC2FD9EBE31/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1200m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Zinc, Tin, Iron',
+    woods: 'Pillar Pine, Night Birch',
+    plants: 'Azuberries, Gas Bulb',
+    animals: 'Jellyfish, Bull Mantra, Sairhorn Stag',
+    items: 'Glass Shards, Electric Filament, Tarnished Saborian Alloy, Lubricating Slime, Weapon Calibration SSD'
+  }
+},
+  { lat: -10800, lng: 5400, level: 14, name: 'Craco', number: 5, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629187887730801/5.png?ex=68826b1d&is=6881199d&hm=d2e7d8b7c050618144b156397b4e1755024376ace45453e5b948c620a8a5245a&=&format=webp&quality=lossless&width=955&height=708',
+  details: {
+    metals: 'Tin, Zinc, Aluminum, Pure Aluminum',
+    woods: 'Apotheon Pine',
+    plants: 'Not Reported',
+    animals: 'Tiger Manta, Bull Manta, Atlas Shrimp',
+    items: 'Raw Underside Oyster, Tarnished Saborian Alloy, Momorosian Nylon Cloth, Electric Filament, Weapon Calibration SDD, Flight Records SDD, Silica',
+    altitude: '1500m',
+    hasArk: 'No',
+    databanks: 5,
+    largeChest: 9
+  }
+},
+  { lat: 6000, lng: 9200, level: 11, name: 'Friendly_Fire', number: 6, img: 'https://automaticpotato.github.io/found-skies/covers/15.png',
+  details: {
+    altitude: '2100m',
+    hasArk: '❌',
+    databanks: 3,
+    largeChest: 3,
+    metals: 'Tin, Aluminum',
+    woods: 'Redusian Birch, Apolleon Pine',
+    plants: 'Beans, Tupau Nuts',
+    animals: 'none?',
+    items: 'Tarnished Saborian Alloy, Weapon Calibration SDD, Momorosian Nylon Cloth, Electric Filament'
+  }
+},
+  { lat: 5400, lng: 4700, level: 8, name: 'Ravara', number: 7, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/7.webp',
+  details: {
+    altitude: '1100m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 6,
+    metals: 'Iron, Zinc',
+    woods: 'Night Birch Wood',
+    plants: 'Gas Bulb, Azuberries',
+    animals: 'Nautilus, Bull Manta, Sairhorn Stag, Jellyfish',
+    items: 'Not Reported'
+  }
+},
+  { lat: 2400, lng: 700, level: 3, name: 'Sanctum_of_the_Ancients', number: 8, img: 'https://cdn.discordapp.com/attachments/1114978152620511265/1397631870824349856/hq720.jpg?ex=68826d9c&is=68811c1c&hm=ff8b5cff89c7b010101fbf0d2f079fa722f4080004b7ce3d3d66b15637d3ffbc&',
+  details: {
+    altitude: '1300m',
+    hasArk: '✅',
+    databanks: 6,
+    largeChest: 'Not Reported',
+    metals: 'Tin, Iron, Lead',
+    woods: 'Pine, Birch',
+    plants: 'Tomato, Tator Root, Eggs',
+    animals: 'Not Reported',
+    items: 'Rock Salt, Scrap Metal, stone'
+  }
+},
+  { lat: -2100, lng: -2350, level: 3, name: 'Shattered_Peak', number: 9, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629188609146970/9.png?ex=68826b1d&is=6881199d&hm=4133f6c11a4b8636377d50220a2f3ebb61678239b27ed00d711f33ed43b0fa19&=&format=webp&quality=lossless&width=1248&height=708',
+  details: {
+    altitude: '1500m',
+    hasArk: '✅',
+    databanks: 6,
+    largeChest: '2?',
+    metals: 'Tin, Lead, Iron',
+    woods: 'Birch, Pine',
+    plants: 'Tator Root, Tomato',
+    animals: 'Not Reported',
+    items: 'Not Reported'
+  }
+},
+  { lat: -1200, lng: 4500, level: 8, name: 'Thieves_and_Retribution', number: 10, img: 'https://images.steamusercontent.com/ugc/17551964622352859702/C7060D1A35DA7A1C291CABAD05EEE24FD6C5E9EE/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1400m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Zinc, Tin, Copper',
+    woods: 'Pillar Pine',
+    plants: 'Gas Bulb, Azuberries',
+    animals: 'Sairhorn Stag (purple), Nautilus',
+    items: 'Glass Shards, Scrap Metal, Lubricating Slime, Electric Filament, Tarnished Saborian Alloy'
+  }
+},
+  { lat: -7400, lng: -4900, level: 12, name: 'Time_Devours_All', number: 11, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/27.webp',
+  details: {
+    altitude: '1800m',
+    hasArk: '✅',
+    databanks: 4,
+    largeChest: '6+',
+    metals: 'Zinc, Copper',
+    woods: 'Pillar Pine Wood, Night Birch Wood',
+    plants: 'Azurberries, Gas Bulb',
+    animals: 'Nautilus, Jellyfish, Bull Manta, Chief (bird), Blue Sairhorn, Sairhorn Stag',
+    items: 'Grubs (underground), Electric Filament, Glass Shards, Seraph Nano Energy, Flight Records SDD (found in underground challenge area)'
+  }
+},
+  { lat: -8550, lng: 7750, level: 15, name: 'The_Valve_District', number: 12, img: 'https://images.steamusercontent.com/ugc/2380783739882538752/3CED563759FCD6885D1A126039E84C521ED264C8/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1600m',
+    hasArk: 'No',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Aluminum, Copper',
+    woods: 'Redusian Pine, Redusian Birch',
+    plants: 'Beans',
+    animals: 'Crow',
+    items: 'Raw Underside Oyster, glass shards, Tarnished Saborian Alloy, Momorosian Nylon Cloth, Electric Filament, Weapon Calibration SDD, Flight Records SDD, Grubs'
+  }
+},
+  { lat: 8050, lng: -5700, level: 15, name: 'The_Grand_Inventors_Mansion', number: 13, img: 'https://images.steamusercontent.com/ugc/2453970404562727357/81564653AB7D697EA7A70A0F4A53A16E60DEC35D/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '2100m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 4,
+    metals: 'Tin',
+    woods: 'Redusian Birch',
+    plants: 'Beans',
+    animals: 'None',
+    items: 'Tarnished Saborian Alloy, Momorosian Nylon, Flight Records SDD'
+  }
+},
+  { lat: 1900, lng: 2750, level: 6, name: 'The_Spine', number: 14, img: 'https://images.steamusercontent.com/ugc/2506892769648802292/E14DCA3E575E2627620346A1F40A4B18E6AD496A/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1500m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Tin, Lead',
+    woods: 'Birch',
+    plants: 'Not Reported',
+    animals: 'Not Reported',
+    items: 'Not Reported'
+  }
+},
+  { lat: -3900, lng: 1200, level: 6, name: 'At_Journeys_End', number: 15, img: 'https://images.steamusercontent.com/ugc/7424330444429012/8FF27E4B80412B332B1497AA674EDC51601EE61F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1100m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Iron, Tin, Zinc',
+    woods: 'Birch',
+    plants: 'Tomato, Gas Bulb',
+    animals: 'Sairhorn Stag, Blue Manta',
+    items: 'Not Reported'
+  }
+},
+  { lat: 4400, lng: -10500, level: 7, name: 'Atlas_Isles', number: 16, img: 'https://images.steamusercontent.com/ugc/47955480899616070/75F11B90DABC5A9B110E829AB2EDD69DEA355839/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1500m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Tin, Copper, Iron, Lead',
+    woods: 'Birch, Pine',
+    plants: 'Tomanana, Tomato',
+    animals: 'None',
+    items: 'Not Reported'
+  }
+},
+  { lat: 2800, lng: 7900, level: 10, name: 'Atlas_Palace', number: 17, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/16.webp',
+  details: {
+    altitude: '1700m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Zinc, Tin',
+    woods: 'Night Birch, Pillar Pine',
+    plants: 'Not Reported',
+    animals: 'Sairhorn Stag, Nautilus',
+    items: 'Tarnished Saborian Alloy, Lubricating Slime, Electric Filament, Glass shards'
+  }
+},
+  { lat: 4000, lng: 11600, level: 8, name: 'Netherworld', number: 18, img: 'https://images.steamusercontent.com/ugc/2505775749471656819/3F4ED33DB8E7772CF94B9D3FBA33F12A79506A04/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1600m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Lead',
+    woods: 'Pine, Birch',
+    plants: 'Daccat Berries, Tomato, Tator Root, Eggs',
+    animals: 'Common Sairhorn, Atlas Shrimp, Birds',
+    items: 'Scrap Metal, Silica, Seraph Nano Energy'
+  }
+},
+  { lat: 1110, lng: -10800, level: 7, name: 'Crystalline_Mausoleum', number: 19, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/10.webp',
+  details: {
+    altitude: '1000m',
+    hasArk: '✅',
+    databanks: 4,
+    largeChest: 5,
+    metals: 'Iron, Tin',
+    woods: 'Pine',
+    plants: 'Tater Root, Eggs, Tomato, Tomanana',
+    animals: 'Common Sairhorn, Blue Manta, Sairhorn Stag',
+    items: 'Not Reported'
+  }
+},
+  { lat: 8800, lng: -1500, level: 12, name: 'Data_Research_Facility', number: 20, img: 'https://images.steamusercontent.com/ugc/35571099084413811/83CDCEAAAC3DC50B08BEFA8157D7CB5746618784/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1600m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 5,
+    metals: 'Lead',
+    woods: 'Redusian Birch',
+    plants: 'Tupau Nuts',
+    animals: 'Tiger Manta',
+    items: 'Weapon Calibration SDD, Momorosian Nylon Cloth, Electrical Filaments, Glass Shards'
+  }
+},
+  { lat: -5400, lng: 6150, level: 12, name: 'Geode_Factory', number: 21, img: 'https://images.steamusercontent.com/ugc/36697728021101431/F0F38143D14CC30ABED1D9B2B85FA3B4C9648149/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '900m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 'Not Reported',
+    metals: 'Tin, Zinc, Aluminum',
+    woods: 'Apotheon Pine, Redusian Birch Wood',
+    plants: 'Not Reported',
+    animals: 'Not Reported',
+    items: 'Tarnished Saborian Alloy, Glass Shards, Raw Underside Oyster'
+  }
+},
+  { lat: 6000, lng: 650, level: 10, name: 'Hanging_Village_of_Ranva', number: 22, img: 'https://images.steamusercontent.com/ugc/10825048028014510401/0107ABFA6D860D2EF21C5671F9E51C90CBDD8B4F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '2000m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 3,
+    metals: 'Zinc, Copper',
+    woods: 'Night Birch',
+    plants: 'Not Reported',
+    animals: 'Not Reported',
+    items: 'Not Reported'
+  }
+},
+  { lat: 8100, lng: 6300, level: 12, name: 'Harbored_Saborian_Citadel', number: 23, img: 'https://images.steamusercontent.com/ugc/11920957430047008/E83F336E2741DA0FB7FB93FC11714AE4521BB367/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '1600m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 6,
+    metals: 'Aluminium, Zinc, Silver',
+    woods: 'Apotheon Pine',
+    plants: 'Beans',
+    animals: 'Tiger Manta',
+    items: 'Glass Shards, Raw Underside Oyster, Flight Records SDD, Electric Filament, Tarnished Saborian Alloy, Momorosian Nylon Cloth'
+  }
+},
   { lat: -6000, lng: 3700, level: 10, name: 'Hermit_Hideaway', number: 24, img: 'https://images.steamusercontent.com/ugc/35571099084374384/092D74973E3EE79A2905C903DC4EDF1CABF80BED/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 4000, lng: -7500, level: 6, name: 'Lode_Vein', number: 25, img: 'https://images.steamusercontent.com/ugc/49084981969399345/9DC64DD9198DDFC0ACEE9E47DC312B0C754E241F/?imw=268&imh=151&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 950, lng: 12600, level: 7, name: 'Mountain_Valley', number: 26, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629189112467526/26.png?ex=68826b1d&is=6881199d&hm=8aa59fd5a2b7eb99e9f33648def9be9f96b79a10e253cf7bf6ae0e090753d05b&=&format=webp&quality=lossless&width=915&height=708' },
-  { lat: -1100, lng: 1400, level: 6, name: 'Natures_respite', number: 27, img: 'https://images.steamusercontent.com/ugc/18682083349082801/FA1FDC71DCE5D0D91EC430FC92341226632C7823/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 2500, lng: -8400, level: 9, name: 'Saborian_Central_Park', number: 28, img: 'https://images.steamusercontent.com/ugc/13759587820867504466/A27E2E814F1BAD5072883A9D93550D439C4E98E0/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: -9150, lng: -800, level: 13, name: 'Saborian_Training_Ground', number: 29, img: 'https://images.steamusercontent.com/ugc/16748347838070984492/95DAADC3C0749081BBB2486489B4221540B34EA1/?imw=268&imh=151&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 100, lng: 8800, level: 6, name: 'Serene_Cove', number: 30, img: 'https://images.steamusercontent.com/ugc/20926872368592668/B718F8A1BA3C9DB3C287AC6386E107162074895F/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -3900, lng: -6900, level: 10, name: 'Tall_Trees_Directors_Cut', number: 31, img: 'https://images.steamusercontent.com/ugc/11925850702225041/8F358658B67641577A880EBF32652AF60E3540A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -8000, lng: -8250, level: 14, name: 'Temple_Core', number: 32, img: 'https://images.steamusercontent.com/ugc/36696481829084933/EDD53F8E5C94791DD507F0D58281A41E84A15329/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 9100, lng: 2800, level: 14, name: 'Temple_Down', number: 33, img: 'https://images.steamusercontent.com/ugc/36695648659456715/0878E84B2F29700BDEAF7CC60DF43A85BA0908A9/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -6050, lng: -600, level: 10, name: 'THE_WELL', number: 34, img: 'https://images.steamusercontent.com/ugc/13049847197789538/688CB5A5F9987CB0B9AB1F0AD7330B72A57BB1A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -3150, lng: 9250, level: 10, name: 'Toppled', number: 35, img: 'https://images.steamusercontent.com/ugc/35571099090522832/322BDB9AC5196337F014974007826695E184C22A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -600, lng: -11650, level: 10, name: 'Traitors_Enclave', number: 36, img: 'https://media.discordapp.net/attachments/1363502652373209109/1364114887348981831/Traitors_Enclave.png?ex=6881c87d&is=688076fd&hm=e544ab44433a82fc12d95644af0708ea812dee32eb25c660bce66fd359db531b&=&format=webp&quality=lossless&width=916&height=812' },
+  { lat: 2900, lng: -5000, level: 6, name: 'Lode_Vein', number: 25, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/8.webp',
+  details: {
+    altitude: '900m',
+    hasArk: '✅',
+    databanks: 3,
+    largeChest: 4,
+    metals: 'Iron, Lead, Tin, Copper',
+    woods: 'Pine',
+    plants: 'Tomato, Tomanana, Deccat Berries, Tator Root',
+    animals: 'Blue Manta, Sairhorn Buck, Common Sairhorn',
+    items: 'Rock Salt, Silica'
+  }
+},
+  { lat: 950, lng: 12600, level: 7, name: 'Mountain_Valley', number: 26, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629189112467526/26.png?ex=68826b1d&is=6881199d&hm=8aa59fd5a2b7eb99e9f33648def9be9f96b79a10e253cf7bf6ae0e090753d05b&=&format=webp&quality=lossless&width=915&height=708',
+  details: {
+    altitude: '900m',
+    hasArk: '✅',
+    databanks: 4,
+    largeChest: 5,
+    metals: 'Iron, Tin, Copper, Lead',
+    woods: 'Pine, Birch',
+    plants: 'Tomanana, Tomato, Daccat Berries, Tator Root',
+    animals: 'Sairhorn Buck, Common Sairhorn, Blue Manta',
+    items: 'Scrap metal'
+  }
+},
+  { lat: -1100, lng: -6400, level: 6, name: 'Natures_respite', number: 27, img: 'https://images.steamusercontent.com/ugc/18682083349082801/FA1FDC71DCE5D0D91EC430FC92341226632C7823/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1400m',
+    hasArk: '❌',
+    databanks: 1,
+    largeChest: 0,
+    metals: 'None',
+    woods: 'Birch',
+    plants: 'None',
+    animals: 'None',
+    items: 'None'
+  }
+},
+  { lat: 2500, lng: -8400, level: 9, name: 'Saborian_Central_Park', number: 28, img: 'https://images.steamusercontent.com/ugc/13759587820867504466/A27E2E814F1BAD5072883A9D93550D439C4E98E0/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false',
+  details: {
+    altitude: '900m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Iron, Zinc',
+    woods: 'Pillar Pine, Night Birch',
+    plants: 'Gas Bulb',
+    animals: 'Nautilus, Blue Sairhorn, Blue Sairhorn Stag',
+    items: 'Lubricating Slime, Glass Shards, Scrap Metal'
+  }
+},
+  { lat: -9150, lng: -800, level: 13, name: 'Saborian_Training_Ground', number: 29, img: 'https://images.steamusercontent.com/ugc/16748347838070984492/95DAADC3C0749081BBB2486489B4221540B34EA1/?imw=268&imh=151&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '2200m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Aluminium, Zinc, Silver',
+    woods: 'Redusian Birch',
+    plants: '', // Will not show in popup
+    animals: '', // Will not show in popup
+    items: 'Tarnished Saborian Alloy, Momorosian Nylon Cloth, Glass Shards, Grubs, Weapon Calibration SDD, Flight Records SDD'
+  }
+},
+  { lat: 100, lng: 8800, level: 6, name: 'Serene_Cove', number: 30, img: 'https://images.steamusercontent.com/ugc/20926872368592668/B718F8A1BA3C9DB3C287AC6386E107162074895F/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1600m',
+    hasArk: '❌',
+    databanks: 2,
+    largeChest: 0,
+    metals: 'Tin',
+    woods: 'Pine Wood',
+    plants: 'Tomato',
+    animals: 'Atlas Shrimp',
+    items: 'Not Reported'
+  }
+},
+  { lat: -3900, lng: -6900, level: 10, name: 'Tall_Trees_Directors_Cut', number: 31, img: 'https://images.steamusercontent.com/ugc/11925850702225041/8F358658B67641577A880EBF32652AF60E3540A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1000m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 3,
+    metals: 'Zinc, Iron',
+    woods: 'Pillar Pine, Night Birch',
+    plants: 'Azuberries, Gas Bulb',
+    animals: 'Bull Manta, Jellyfish, Blue Sairhorn, Sairhorn Stag (Blue), Nautilus, Chief (bird)',
+    items: 'Electric Filament, Glass Shards, Silica, Tarnished Saborian Alloy, Lubricating Slime, Seraph Nano Energy'
+  }
+},
+  { lat: -8000, lng: -8250, level: 14, name: 'Temple_Core', number: 32, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/23.webp',
+  details: {
+    altitude: '900m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 5,
+    metals: 'Aluminium, Silver, Tin',
+    woods: 'Apotheon Pine',
+    plants: 'Beans',
+    animals: 'Tiger Manta, Bull Manta',
+    items: 'Tarnished Saborian Alloy, Momorosian Nylon Cloth, Weapon Calibration SDD, Electrical Filament, Glass Shards, Raw Underside Oyster, Flight Records SDD, Grubs'
+  }
+},
+  { lat: 9100, lng: 2800, level: 14, name: 'Temple_Down', number: 33, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/33.webp',
+  details: {
+    altitude: '1400m',
+    hasArk: '❌',
+    databanks: 4,
+    largeChest: 4,
+    metals: 'Aluminium, Tin, Zinc',
+    woods: 'Apotheon Pine, Redusian Birch',
+    plants: 'Tupau Nuts, Beans',
+    animals: 'Tiger Manta, Bull Manta, Shrimp',
+    items: 'Tarnished Saborian Alloy, Momorosian Nylon Cloth, Underside Oyster, Grubs, Glass Shards, Eggs, Silica, Weapon Calibration SDD, Flight Records SDD'
+  }
+},
+  { lat: -6050, lng: -600, level: 10, name: 'THE_WELL', number: 34, img: 'https://images.steamusercontent.com/ugc/13049847197789538/688CB5A5F9987CB0B9AB1F0AD7330B72A57BB1A4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1400m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Zinc, Copper?, Iron?',
+    woods: 'Pillar Pine',
+    plants: 'Azuberries, Gas Bulbs',
+    animals: 'Nautilus',
+    items: 'Tarnished Saborian Alloy, Glass Shards, Electric Filament, Grubs, lubricant gel'
+  }
+},
+  { lat: -3150, lng: 9250, level: 10, name: 'Toppled', number: 35, img: 'https://images.steamusercontent.com/ugc/35571099090522832/322BDB9AC5196337F014974007826695E184C22A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1200m',
+    hasArk: '✅',
+    databanks: 4,
+    largeChest: 'Not Reported',
+    metals: 'Tin, Zinc',
+    woods: 'Night Birch, Pillar Pine',
+    plants: 'Gas Bulb',
+    animals: 'Jellyfish',
+    items: 'Not Reported'
+  }
+},
+  { lat: -1700, lng: -9150, level: 10, name: 'Traitors_Enclave', number: 36, img: 'https://davemane42.github.io/LostSkiesInteractiveMap/img/islands/24.webp',
+  details: {
+    altitude: '1600m',
+    hasArk: '❌',
+    databanks: 1,
+    largeChest: 1,
+    metals: 'Zinc, Tin',
+    woods: 'Pillar Pine, Night Birch',
+    plants: 'Azuberries, Gas Bulb',
+    animals: 'None',
+    items: 'Silica, Lubricating Slime'
+  }
+},
   { lat: -500, lng: -14600, level: 8, name: 'Aquaduct_Island', number: 37, img: 'https://images.steamusercontent.com/ugc/27693518483867402/C321BF4CBFAF60AFE7113C17D97B5E3BD4D8C35E/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: -2800, lng: 12800, level: 8, name: 'Atlas_Spire', number: 38, img: 'https://images.steamusercontent.com/ugc/42320254923492141/19C9122D9D02395EEF1390F70CD92BFCCC3EE033/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: -10600, lng: -6500, level: 13, name: 'Cargo_Ship_B', number: 39, img: 'https://images.steamusercontent.com/ugc/36698355671393540/5A153A366C147017915DD08E178C0B7D17C79C94/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: 12250, lng: 1200, level: 13, name: 'Dryftwood_River', number: 40, img: 'https://images.steamusercontent.com/ugc/12485074223546072709/AB6D7DC51EB30071FF374C996684167E537B9A20/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: 11000, lng: -8000, level: 12, name: 'New_Redusa', number: 41, img: 'https://images.steamusercontent.com/ugc/12941666969162637756/4FFD22C6D15944241FD0223CD5B529726491C9CA/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: 3900, lng: -12800, level: 10, name: 'Relay_Station_D', number: 42, img: 'https://images.steamusercontent.com/ugc/1796636835345802/8BB91ECB6EA0E360D02724EBA16EB4E2203062A6/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 3550, lng: 14200, level: 11, name: 'Sabor_research_facility_87', number: 43, img: 'https://images.steamusercontent.com/ugc/17855666951499294874/F2A1580A507EBDAC26373B9F665E4AC3033D2AB4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 3550, lng: 14200, level: 11, name: 'Sabor_research_facility_87', number: 43, img: 'https://images.steamusercontent.com/ugc/17855666951499294874/F2A1580A507EBDAC26373B9F665E4AC3033D2AB4/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '800m',
+    hasArk: '✅',
+    databanks: 5,
+    largeChest: 'Not Reported',
+    metals: 'Zinc',
+    woods: 'Pillar Pine',
+    plants: 'Azuberries, Gas Bulb',
+    animals: 'Jellyfish, Nautilus',
+    items: 'Lubricating Slime, Burning Coral'
+  }
+},
   { lat: -5800, lng: -11000, level: 8, name: 'Shattered', number: 44, img: 'https://images.steamusercontent.com/ugc/17184726129550996517/299616ED357C4D7271FC6E8D87656D21697BEC6A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 7200, lng: 12650, level: 4, name: 'Stitches', number: 45, img: 'https://images.steamusercontent.com/ugc/18682599225519426/324CDB40CE5BE7E1EA28148AFFE7EB61D280E106/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 7200, lng: 12650, level: 4, name: 'Stitches', number: 45, img: 'https://images.steamusercontent.com/ugc/18682599225519426/324CDB40CE5BE7E1EA28148AFFE7EB61D280E106/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1800m',
+    hasArk: '❌',
+    databanks: 1,
+    largeChest: 1,
+    metals: 'Lead',
+    woods: 'Pine, Birch',
+    plants: 'Daccat Berries',
+    animals: 'None',
+    items: 'None'
+  }
+},
   { lat: -7000, lng: 11650, level: 13, name: 'Sundered_Moon', number: 46, img: 'https://media.discordapp.net/attachments/1114978152620511265/1397629189741482114/46.png?ex=68826b1d&is=6881199d&hm=38cd58f537dde5ef8d468da1d2b23684a40348e09e193e7277bb589fa50fd05b&=&format=webp&quality=lossless&width=1077&height=708' },
-  { lat: 11900, lng: 5250, level: 10, name: 'Research_Facility_Theta', number: 47, img: 'https://images.steamusercontent.com/ugc/61459269001702322/3FD5B168F020C37DE056660B79D9366409F87D04/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: 9450, lng: 8850, level: 8, name: 'Wandering_Mountain', number: 48, img: 'https://images.steamusercontent.com/ugc/10910435218475709033/79F0193962D114F6F3C34F76FF5E4B5F976CE6BD/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: 11900, lng: 5250, level: 10, name: 'Research_Facility_Theta', number: 47, img: 'https://images.steamusercontent.com/ugc/61459269001702322/3FD5B168F020C37DE056660B79D9366409F87D04/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1600m',
+    hasArk: '❌',
+    databanks: 5,
+    largeChest: 4,
+    metals: 'Lead',
+    woods: 'Pillar Pine',
+    plants: 'Not Reported',
+    animals: 'Nautilus, Blue Sairhorn, Sairhorn Stag, Jellyfish, Bull Manta, Birds',
+    items: 'Scrap Metal, Electric Filament, Momorosian Nylon Cloth, Seraph Nano Energy, Flight Records SSD'
+  }
+},
+  { lat: 9450, lng: 8850, level: 8, name: 'Wandering_Mountain', number: 48, img: 'https://images.steamusercontent.com/ugc/10910435218475709033/79F0193962D114F6F3C34F76FF5E4B5F976CE6BD/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+  details: {
+    altitude: '1500m',
+    hasArk: '❌',
+    databanks: 3,
+    largeChest: 2,
+    metals: 'Copper, Tin',
+    woods: 'Pine, Birch',
+    plants: 'Daccat Berries, Tomato, Tator Root, Eggs',
+    animals: 'Sairhorn Buck, Common Sairhorn, Blue Manta, Atlas Shrimp',
+    items: 'Scrap Metal, Silica, Rock Salt'
+  }
+},
   { lat: -11200, lng: 8900, level: 11, name: 'Mining_Settlement_of_Markil_v1', number: 49, img: 'https://images.steamusercontent.com/ugc/16330827621795919660/24F9D34A19A54952794BF0165FD55CF51F96C2DB/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: -12250, lng: -2800, level: 13, name: 'INTERLINKED_04', number: 50, img: 'https://images.steamusercontent.com/ugc/7423600166260495/67524D063EC5FB6E4D16290897D34938526EE753/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
   { lat: 11150, lng: -4400, level: 10, name: 'Lighthouse_Arabeth', number: 51, img: 'https://images.steamusercontent.com/ugc/9661148044318056692/79616F63B2A854EA2C469ED7396678320640D416/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
@@ -254,11 +725,49 @@ markersData.forEach(data => {
   }) })
     .addTo(map)
     .bindPopup(
-      `<img src="${data.img}" alt="${data.name}" style="width:100px;height:auto;display:block;margin-bottom:8px;">
-      <b>${data.number}: ${data.name}</b><br>
-      Level: ${data.level}<br>
-      Lat: ${mirroredLat}<br>
-      Lng: ${mirroredLng}`
+  `<div style="
+    position:relative;
+    width:310px;
+    min-height:430px;
+    max-width:none;
+    background: url('${data.img}') center center / cover no-repeat;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    color:white;
+    font-family:sans-serif;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+  ">
+    <div style="
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.45);
+      border-radius:16px;
+      padding:24px 24px 18px 24px;
+      pointer-events:none;
+      width:100%;
+      height:100%;
+      box-sizing:border-box;
+      display:block;
+    ">
+      <span style="font-size:36px;font-weight:bold;line-height:1.1;display:block;text-align:center;">${data.number}: ${data.name.replace(/_/g, ' ')}</span>
+      <span style="font-size:16px;text-align:center;">Level: ${data.level}</span><br>
+      <span>Lat: ${mirroredLat}</span><br>
+      <span>Lng: ${mirroredLng}</span><br>
+      ${data.details ? `
+        ${data.details.altitude && data.details.altitude !== 'Not Reported' ? `<b>Altitude:</b> ${data.details.altitude}<br><br>` : ''}
+        ${data.details.hasArk && data.details.hasArk !== 'Not Reported' ? `<b>Has Ark:</b> ${data.details.hasArk}<br>` : ''}
+        ${data.details.databanks && data.details.databanks !== 'Not Reported' ? `<b>Databanks:</b> ${data.details.databanks}<br>` : ''}
+        ${data.details.largeChest && data.details.largeChest !== 'Not Reported' ? `<b>Large Chest:</b> ${data.details.largeChest}<br><br>` : ''}
+        ${data.details.metals && data.details.metals !== 'Not Reported' ? `<b>Metals:</b> ${data.details.metals}<br>` : ''}
+        ${data.details.woods && data.details.woods !== 'Not Reported' ? `<b>Woods:</b> ${data.details.woods}<br>` : ''}
+        ${data.details.plants && data.details.plants !== 'Not Reported' ? `<b>Plants:</b> ${data.details.plants}<br>` : ''}
+        ${data.details.animals && data.details.animals !== 'Not Reported' ? `<b>Animals:</b> ${data.details.animals}<br>` : ''}
+        ${data.details.items && data.details.items !== 'Not Reported' ? `<b>Items:</b> ${data.details.items}<br>` : ''}
+      ` : ''}
+    </div>
+  </div>`
     );
 });
 
@@ -273,4 +782,5 @@ document.getElementById('dropdown-btn').onclick = function() {
 </script>
 </body>
 </html>
+
 
