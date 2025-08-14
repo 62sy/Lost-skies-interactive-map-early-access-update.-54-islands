@@ -158,18 +158,45 @@
 <script>
 const map = L.map('map', {
   crs: L.CRS.Simple,
-  minZoom: -5.5,
+  minZoom: -6,
   maxZoom: -1,
-  maxBounds: [[-20000, -20000], [20000, 20000]], // keep this line
-  maxBoundsViscosity: 1.0, // add this line
-  dragging: true, // enable dragging
-  doubleClickZoom: false, // disable double click zoom
-  touchZoom: false, // disable touch zoom
-  scrollWheelZoom: 'zoom', // zoom at mouse position
-  preferCanvas: true, // use canvas for overlays (faster)
-  inertia: false, // disable inertia for smoother drag
-  keyboard: false // disable keyboard navigation
+  dragging: true,
+  doubleClickZoom: false,
+  touchZoom: false,
+  scrollWheelZoom: 'zoom',
+  preferCanvas: true,
+  inertia: false,
+  keyboard: false
 });
+
+// Transparent overlay code goes here!
+function createTransparentOutsideCircleDataUrl(size, circleRadius, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const cx = size / 2, cy = size / 2;
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, size, size);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(cx, cy, circleRadius, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  return canvas.toDataURL();
+}
+
+const overlaySize = 2000; // px (smaller for browser performance)
+const overlayCircleRadius = 250; // px (center hole, scales with bounds)
+const overlayColor = 'purple';
+const overlayUrl = createTransparentOutsideCircleDataUrl(overlaySize, overlayCircleRadius, overlayColor);
+
+// Scale bounds to match your map's drag area
+L.imageOverlay(overlayUrl, [[-80000, -80000], [80000, 80000]], {
+  opacity: 0.6,
+  interactive: false,
+  zIndex: 5
+}).addTo(map);
 
 // Add green circle boundary at map center
 const boundaryCircle = L.circle([0, 0], {
@@ -713,11 +740,35 @@ const markersData = [
   }
 },
   { lat: -11200, lng: 8900, level: 11, name: 'Mining_Settlement_of_Markil_v1', number: 49, img: 'https://images.steamusercontent.com/ugc/16330827621795919660/24F9D34A19A54952794BF0165FD55CF51F96C2DB/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -12250, lng: -2800, level: 13, name: 'INTERLINKED_04', number: 50, img: 'https://images.steamusercontent.com/ugc/7423600166260495/67524D063EC5FB6E4D16290897D34938526EE753/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -12250, lng: -2800, level: 13, name: 'INTERLINKED_04', number: 50, img: 'https://images.steamusercontent.com/ugc/7423600166260495/67524D063EC5FB6E4D16290897D34938526EE753/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+    details: {
+      altitude: '300',
+      largeChest: 6,
+      databanks: 5,
+      hasArk: 'No',
+      metals: 'Aluminium, Lead',
+      woods: 'Pine',
+      animals: 'Manta Tiger, Shrimp',
+      items: 'Tarnished Saborian Alloy, Scrap Metal, Momorosian Nylon Cloth, Glass Shards, Stone, SSD, Coral, Grubs, Salt, Oyster, Slime',
+      plants: 'Fiber, Berries, Azure, Tomato, Tomana, Beans, Mushroom, Eggs, Nuts, Potatos'
+    }
+  },
   { lat: 11150, lng: -4400, level: 10, name: 'Lighthouse_Arabeth', number: 51, img: 'https://images.steamusercontent.com/ugc/9661148044318056692/79616F63B2A854EA2C469ED7396678320640D416/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false' },
-  { lat: 7900, lng: -10000, level: 9, name: 'Doshi_export_test', number: 52, img: 'https://images.steamusercontent.com/ugc/13055550628269333/E3D0EDD92D4AFCD2DC1D22D1DAA71BD616EA322C/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -12650, lng: 1900, level: 13, name: 'Resting_Titan', number: 53, img: 'https://images.steamusercontent.com/ugc/14364650787230671269/B0E27B3458DBAD61FB5258540F700CBF4E1A079B/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
-  { lat: -6750, lng: 9150, level: 10, name: 'Rupture', number: 54, img: 'https://images.steamusercontent.com/ugc/24312098774332487/0C0525850207AA2F817A1993BF3C7F96DC54747A/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' }
+  { lat: 7900, lng: -10000, level: 9, name: 'Doshi_export_test', number: 52, img: 'https://images.steamusercontent.com/ugc/13055550628269333/E3D0EDD92D4AFCD2DC1D22D1DAA71BD616EA322C/?imw=637&imh=500&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' },
+  { lat: -12650, lng: 1900, level: 13, name: 'Resting_Titan', number: 53, img: 'https://images.steamusercontent.com/ugc/14364650787230671269/B0E27B3458DBAD61FB5258540F700CBF4E1A079B/?imw=637&imh=500&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+    details: {
+      altitude: '300',
+      largeChest: 5,
+      databanks: 5,
+      hasArk: 'No',
+      metals: 'Zinc, Aluminium, Silver, (mostly Lead)',
+      woods: 'Pine, redusian birch',
+      animals: 'Manta Tiger, Manta Bull',
+      items: 'Tarnished Saborian Alloy, Momorosian Nylon Cloth, Weapon Calibration SDD, Electrical Filament, Glass Shards, Flight Records SSD',
+      plants: 'Fiber, Berries, Azure, Tomato, Tomana, Beans'
+    }
+  },
+  { lat: -6750, lng: 9150, level: 10, name: 'Rupture', number: 54, img: 'https://images.steamusercontent.com/ugc/24312098774332487/0C0525850207AA2F817A1993BF3C7F96DC54747A/?imw=637&imh=500&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true' }
 ];
 
 // Store marker references for island list interaction
@@ -737,18 +788,24 @@ markersData.forEach(data => {
       <span style="position:relative;z-index:3;display:inline-block;width:100%;height:100%;line-height:60px;font-size:28px;color:white;text-shadow:0 0 6px #000;font-weight:bold;">${data.number}</span>
     </div>
   `;
-  const marker = L.marker([mirroredLat, mirroredLng], { icon: L.divIcon({
+  const popupOptions = { autoPan: true };
+if (mirroredLat > 7000) {
+  popupOptions.offset = L.point(0, 0); // large negative Y moves popup below marker
+}
+const marker = L.marker([mirroredLat, mirroredLng], {
+  icon: L.divIcon({
     className: '',
     html: iconHtml,
     iconSize: [60, 60],
     iconAnchor: [30, 30]
-  }) })
-    .addTo(map)
-    .bindPopup(
+  })
+})
+.addTo(map)
+.bindPopup(
   `<div style="
     position:relative;
     width:310px;
-    min-height:430px;
+    min-height:480px;
     max-width:none;
     background: url('${data.img}') center center / cover no-repeat;
     border-radius: 16px;
@@ -764,7 +821,7 @@ markersData.forEach(data => {
       top:0; left:0; right:0; bottom:0;
       background:rgba(0,0,0,0.45);
       border-radius:16px;
-      padding:24px 24px 18px 24px;
+      padding:30px 24px 18px 24px;
       pointer-events:none;
       width:100%;
       height:100%;
@@ -788,7 +845,8 @@ markersData.forEach(data => {
       ` : ''}
     </div>
   </div>`
-    );
+  , popupOptions
+);
   markerRefs[data.number] = marker;
 
   // Hide island list and compass when popup opens, show when closes
@@ -802,7 +860,7 @@ markersData.forEach(data => {
   });
 });
 
-const mapBounds = [[-20000, -20000], [20000, 20000]]; // Adjust size as needed
+const mapBounds = [[-40000, -40000], [40000, 40000]]; // Adjust size as needed
 map.setMaxBounds(mapBounds);
 map.setView([0, 0], 0); // Center map at (0,0) with zoom level 0
 
@@ -827,6 +885,7 @@ document.querySelectorAll('#dropdown-list li').forEach(li => {
 </script>
 </body>
 </html>
+
 
 
 
